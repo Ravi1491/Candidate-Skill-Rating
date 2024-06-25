@@ -61,11 +61,9 @@ export class UserController {
         domain: 'localhost',
       });
 
-      console.log('access Token', jwtToken.token);
-
       res.send({
         message: 'User created successfully',
-        data: createUser,
+        accessToken: jwtToken.token,
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
@@ -101,11 +99,9 @@ export class UserController {
         domain: 'localhost',
       });
 
-      console.log('access Token', jwtToken.token);
-
       res.send({
         message: 'User logged in successfully',
-        data: user,
+        accessToken: jwtToken.token,
       });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
