@@ -15,12 +15,14 @@ import { User } from 'src/user/entities/user.entity';
 import { QuestionService } from 'src/question/question.service';
 import { CreateRatingDto } from './dto/rating.dto';
 import { DifficultyLevel } from 'src/utils/enum';
+import { SkillService } from 'src/skill/skill.service';
 
 @Controller('answer')
 export class AnswerController {
   constructor(
     private readonly answerService: AnswerService,
     private readonly questionService: QuestionService,
+    private readonly skillService: SkillService,
   ) {}
 
   @Post('/create')
@@ -107,33 +109,43 @@ export class AnswerController {
     try {
       const answers = await this.answerService.findAllByCandidate(candidateId);
 
-      let numerator = 0;
-      let denominator = 0;
+      const skillRatings = await answers.reduce(async (accPromise, answer) => {
+        const acc = await accPromise;
+        const question = await this.questionService.findOne({
+          id: answer.questionId,
+        });
 
-      await Promise.all(
-        answers.map(async (answer) => {
-          const question = await this.questionService.findOne({
-            id: answer.questionId,
-          });
+        const { rating } = answer;
+        const { skillId, difficultyLevel } = question;
 
-          const { rating } = answer;
-          const { difficultyLevel } = question;
+        const skill = await this.skillService.findOne({ id: skillId });
 
-          const weight =
-            difficultyLevel === DifficultyLevel.EASY
-              ? 1
-              : difficultyLevel === DifficultyLevel.MEDIUM
-                ? 2
-                : 3;
+        if (!acc[skillId]) {
+          acc[skillId] = { totalRating: 0, totalWeight: 0 };
+        }
 
-          numerator += rating * weight;
-          denominator += weight;
-        }),
-      );
+        const weight =
+          difficultyLevel === DifficultyLevel.EASY
+            ? 1
+            : difficultyLevel === DifficultyLevel.MEDIUM
+              ? 2
+              : 3;
 
-      const aggregateRatings = numerator / denominator;
+        acc[skillId].totalRating += rating * weight;
+        acc[skillId].totalWeight += weight;
+        acc[skillId].skillName = skill.name;
 
-      return Math.round(aggregateRatings * 100) / 100;
+        return acc;
+      }, Promise.resolve({}));
+
+      const aggregateRatings = Object.keys(skillRatings).map((skillId) => ({
+        skillId: skillId,
+        skillName: skillRatings[skillId].skillName,
+        rating:
+          skillRatings[skillId].totalRating / skillRatings[skillId].totalWeight,
+      }));
+
+      return aggregateRatings;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
