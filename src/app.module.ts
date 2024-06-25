@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import * as Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
+import { Dialect } from 'sequelize';
+import { SequelizeModule } from '@nestjs/sequelize';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { applicationConfig } from 'config';
 
 @Module({
   imports: [
@@ -21,6 +24,18 @@ import { AppService } from './app.service';
           .valid('development', 'base', 'beta', 'qa', 'qa2')
           .default('development'),
       }),
+    }),
+    SequelizeModule.forRoot({
+      dialect: applicationConfig.db.dbDialect as Dialect,
+      host: applicationConfig.db.host,
+      username: applicationConfig.db.user,
+      password: applicationConfig.db.password,
+      port: parseInt(applicationConfig.db.port, 10),
+      database: applicationConfig.db.name,
+      logging: false,
+      autoLoadModels: true,
+      synchronize: false,
+      sync: { force: false },
     }),
   ],
   controllers: [AppController],
