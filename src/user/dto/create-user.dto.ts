@@ -1,1 +1,8 @@
-export class CreateUserDto {}
+import { UserRole } from 'src/utils/enum';
+
+export class CreateUserDto {
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+}
