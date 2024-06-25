@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Question } from './entities/question.entity';
 import { CreateQuestionDto } from './dto/create-question.dto';
+import { DifficultyLevel } from 'src/utils/enum';
 
 @Injectable()
 export class QuestionService {
@@ -41,5 +42,21 @@ export class QuestionService {
     });
 
     return { total: count, rows };
+  }
+
+  async update(
+    condition = {},
+    payload: {
+      skillId: string;
+      question: string;
+      difficultyLevel: DifficultyLevel;
+    },
+    options = {},
+  ) {
+    return this.questionModel.update(payload, {
+      where: condition,
+      ...options,
+      returning: true,
+    });
   }
 }

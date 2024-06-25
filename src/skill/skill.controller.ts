@@ -41,7 +41,7 @@ export class SkillController {
     }
   }
 
-  @Get()
+  @Get('/get-all')
   findAll() {
     return this.skillService.findAll();
   }

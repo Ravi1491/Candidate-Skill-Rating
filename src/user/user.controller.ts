@@ -112,7 +112,7 @@ export class UserController {
     }
   }
 
-  @Get()
+  @Get('/me')
   @Roles(UserRole.CANDIDATE, UserRole.REVIEWER)
   @UseGuards(RolesGuard)
   async getMyProfile(@CurrentUser() currentUser: User) {
