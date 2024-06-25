@@ -34,6 +34,21 @@ export class UserService {
     });
   }
 
+  async update(
+    condition = {},
+    payload: {
+      name: string;
+      email: string;
+    },
+    options = {},
+  ) {
+    return this.userModel.update(payload, {
+      where: condition,
+      ...options,
+      returning: true,
+    });
+  }
+
   async findAndCountAll(payload = {}, options = {}) {
     const { count, rows } = await this.userModel.findAndCountAll({
       where: payload,

@@ -5,6 +5,9 @@ import {
   HttpException,
   HttpStatus,
   Res,
+  Get,
+  UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -13,6 +16,11 @@ import { Response } from 'express';
 import { genSalt, hash, compare } from 'bcryptjs';
 import { Public } from 'src/auth/decorators/public';
 import { LoginUserDto } from './dto/login-user.dto';
+import { CurrentUser } from 'src/auth/decorators/current-user';
+import { User } from './entities/user.entity';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles';
+import { UserRole } from 'src/utils/enum';
 
 @Controller('user')
 export class UserController {
@@ -99,6 +107,71 @@ export class UserController {
         message: 'User logged in successfully',
         data: user,
       });
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get()
+  @Roles(UserRole.CANDIDATE, UserRole.REVIEWER)
+  @UseGuards(RolesGuard)
+  async getMyProfile(@CurrentUser() currentUser: User) {
+    try {
+      const user = await this.userService.findOne({ id: currentUser.id });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Post('update')
+  @Roles(UserRole.CANDIDATE, UserRole.REVIEWER)
+  @UseGuards(RolesGuard)
+  async updateProfile(
+    @CurrentUser() currentUser: User,
+    @Body()
+    updateUserInput: {
+      name: string;
+      email: string;
+    },
+  ) {
+    try {
+      const user = await this.userService.findOne({ id: currentUser.id });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const updatedUser = await this.userService.update(
+        { id: currentUser.id },
+        updateUserInput,
+      );
+
+      return updatedUser;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Delete('delete')
+  @Roles(UserRole.CANDIDATE, UserRole.REVIEWER)
+  @UseGuards(RolesGuard)
+  async deleteProfile(@CurrentUser() currentUser: User) {
+    try {
+      const user = await this.userService.findOne({ id: currentUser.id });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const deletedUser = await this.userService.delete({ id: currentUser.id });
+
+      return deletedUser;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
