@@ -9,5 +9,6 @@ import { SkillModule } from 'src/skill/skill.module';
   imports: [SequelizeModule.forFeature([Question]), SkillModule],
   controllers: [QuestionController],
   providers: [QuestionService],
+  exports: [QuestionService],
 })
 export class QuestionModule {}

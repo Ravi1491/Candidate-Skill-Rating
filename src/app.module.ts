@@ -13,6 +13,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guards/auth.guard';
 import { QuestionModule } from './question/question.module';
 import { SkillModule } from './skill/skill.module';
+import { AnswerModule } from './answer/answer.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { SkillModule } from './skill/skill.module';
     AuthModule,
     QuestionModule,
     SkillModule,
+    AnswerModule,
   ],
   controllers: [AppController],
   providers: [
