@@ -6,6 +6,7 @@ import {
   Param,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { AnswerService } from './answer.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
@@ -13,6 +14,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user';
 import { User } from 'src/user/entities/user.entity';
 import { QuestionService } from 'src/question/question.service';
 import { CreateRatingDto } from './dto/rating.dto';
+import { DifficultyLevel } from 'src/utils/enum';
 
 @Controller('answer')
 export class AnswerController {
@@ -98,5 +100,42 @@ export class AnswerController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.answerService.findOne(+id);
+  }
+
+  @Get('/aggregate/skills')
+  async getAggregateSkills(@Query('candidateId') candidateId: string) {
+    try {
+      const answers = await this.answerService.findAllByCandidate(candidateId);
+
+      let numerator = 0;
+      let denominator = 0;
+
+      await Promise.all(
+        answers.map(async (answer) => {
+          const question = await this.questionService.findOne({
+            id: answer.questionId,
+          });
+
+          const { rating } = answer;
+          const { difficultyLevel } = question;
+
+          const weight =
+            difficultyLevel === DifficultyLevel.EASY
+              ? 1
+              : difficultyLevel === DifficultyLevel.MEDIUM
+                ? 2
+                : 3;
+
+          numerator += rating * weight;
+          denominator += weight;
+        }),
+      );
+
+      const aggregateRatings = numerator / denominator;
+
+      return Math.round(aggregateRatings * 100) / 100;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }

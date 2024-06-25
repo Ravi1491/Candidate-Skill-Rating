@@ -54,4 +54,10 @@ export class AnswerService {
       returning: true,
     });
   }
+
+  findAllByCandidate(candidateId: string): Promise<Answer[]> {
+    return this.answerModel.findAll({
+      where: { candidateId },
+    });
+  }
 }
