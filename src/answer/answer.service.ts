@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Answer } from './entities/answer.entity';
+import { UpdateAnswerDto } from './dto/update-answer.dto';
 
 @Injectable()
 export class AnswerService {
@@ -44,5 +45,13 @@ export class AnswerService {
     });
 
     return { total: count, rows };
+  }
+
+  async update(condition = {}, payload: UpdateAnswerDto, options = {}) {
+    return this.answerModel.update(payload, {
+      where: condition,
+      ...options,
+      returning: true,
+    });
   }
 }
