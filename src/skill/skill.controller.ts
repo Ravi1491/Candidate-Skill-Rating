@@ -6,15 +6,21 @@ import {
   Param,
   HttpStatus,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import { SkillService } from './skill.service';
 import { CreateSkillDto } from './dto/create-skill.dto';
+import { UserRole } from 'src/utils/enum';
+import { Roles } from 'src/auth/decorators/roles';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('skill')
 export class SkillController {
   constructor(private readonly skillService: SkillService) {}
 
-  @Post('/')
+  @Post('/create')
+  @Roles(UserRole.REVIEWER)
+  @UseGuards(RolesGuard)
   async create(@Body() createSkillDto: CreateSkillDto) {
     try {
       const { name } = createSkillDto;

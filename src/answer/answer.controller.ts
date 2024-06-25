@@ -3,10 +3,10 @@ import {
   Get,
   Post,
   Body,
-  Param,
   HttpException,
   HttpStatus,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { AnswerService } from './answer.service';
 import { CreateAnswerDto } from './dto/create-answer.dto';
@@ -14,8 +14,10 @@ import { CurrentUser } from 'src/auth/decorators/current-user';
 import { User } from 'src/user/entities/user.entity';
 import { QuestionService } from 'src/question/question.service';
 import { CreateRatingDto } from './dto/rating.dto';
-import { DifficultyLevel } from 'src/utils/enum';
+import { DifficultyLevel, UserRole } from 'src/utils/enum';
 import { SkillService } from 'src/skill/skill.service';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles';
 
 @Controller('answer')
 export class AnswerController {
@@ -26,6 +28,8 @@ export class AnswerController {
   ) {}
 
   @Post('/create')
+  @Roles(UserRole.CANDIDATE)
+  @UseGuards(RolesGuard)
   async create(
     @Body() createAnswerDto: CreateAnswerDto,
     @CurrentUser() user: User,
@@ -67,6 +71,8 @@ export class AnswerController {
   }
 
   @Post('/give-rating')
+  @Roles(UserRole.REVIEWER)
+  @UseGuards(RolesGuard)
   async giveRating(@Body() body: CreateRatingDto) {
     try {
       if (!body.answerId) {
@@ -94,17 +100,9 @@ export class AnswerController {
     }
   }
 
-  @Get()
-  findAll() {
-    return this.answerService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.answerService.findOne(+id);
-  }
-
   @Get('/aggregate/skills')
+  @Roles(UserRole.REVIEWER, UserRole.CANDIDATE)
+  @UseGuards(RolesGuard)
   async getAggregateSkills(@Query('candidateId') candidateId: string) {
     try {
       const answers = await this.answerService.findAllByCandidate(candidateId);

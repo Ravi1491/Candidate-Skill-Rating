@@ -6,10 +6,14 @@ import {
   Param,
   HttpStatus,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import { QuestionService } from './question.service';
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { SkillService } from 'src/skill/skill.service';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserRole } from 'src/utils/enum';
+import { Roles } from 'src/auth/decorators/roles';
 
 @Controller('question')
 export class QuestionController {
@@ -19,6 +23,8 @@ export class QuestionController {
   ) {}
 
   @Post('/create')
+  @Roles(UserRole.REVIEWER)
+  @UseGuards(RolesGuard)
   create(@Body() createQuestionDto: CreateQuestionDto) {
     try {
       if (!createQuestionDto.skillId) {
