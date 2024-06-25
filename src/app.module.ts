@@ -11,6 +11,8 @@ import { AuthModule } from './auth/auth.module';
 import { JwtService } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guards/auth.guard';
+import { QuestionModule } from './question/question.module';
+import { SkillModule } from './skill/skill.module';
 
 @Module({
   imports: [
@@ -42,6 +44,8 @@ import { AuthGuard } from './auth/guards/auth.guard';
       sync: { force: false },
     }),
     AuthModule,
+    QuestionModule,
+    SkillModule,
   ],
   controllers: [AppController],
   providers: [

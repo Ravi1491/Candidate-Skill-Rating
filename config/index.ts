@@ -14,8 +14,9 @@ export const applicationConfig = {
     port: process.env.DB_PORT,
   },
   jwt: {
-    secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN,
-    issuer: process.env.JWT_ISSUER,
+    secret: process.env.JWT_SECRET || 'server-secret',
+    cookieKey: 'candidate_jwt_key',
+    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+    issuer: process.env.JWT_ISSUER || 'candidate',
   },
 };

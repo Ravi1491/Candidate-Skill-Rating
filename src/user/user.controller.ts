@@ -27,7 +27,7 @@ export class UserController {
       });
 
       if (user) {
-        throw new Error('User already exist with this email or mobile number');
+        throw new Error('User already exist with this email');
       }
 
       const hashPassword = await hash(
@@ -54,7 +54,11 @@ export class UserController {
       });
 
       console.log('access Token', jwtToken.token);
-      return createUser;
+
+      res.send({
+        message: 'User created successfully',
+        data: createUser,
+      });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
@@ -90,7 +94,11 @@ export class UserController {
       });
 
       console.log('access Token', jwtToken.token);
-      return user;
+
+      res.send({
+        message: 'User logged in successfully',
+        data: user,
+      });
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
